@@ -1,0 +1,500 @@
+Snd
+
+Snd is a sound editor.  It currently runs on nearly all
+Unix-based systems, including Mac OSX and Cygwin.
+To build Snd, get the sources from
+
+  ftp://ccrma-ftp.stanford.edu/pub/Lisp/snd-18.tar.gz
+
+  gzip -d snd-18.tar.gz
+  tar xf snd-18.tar
+  cd snd-18
+  ./configure
+  make
+
+and if you like, su root, then
+
+  make install
+
+
+The configure script has a bunch of arguments:
+
+   Extension language:
+
+     --with-s7         use s7 (the default, a version of Scheme).
+
+     --with-ruby       use Ruby as the extension language.  If you build Ruby from the sources,
+     			 remember to use the --enable-shared switch.  Otherwise ruby.pc is messed up.
+                         If ruby.pc (or equivalent) is missing, tools/make-config-pc.rb can make one:
+                         make-config-pc.rb > ruby.pc
+                         mv ruby.pc /usr/local/lib/pkgconfig/ruby.pc
+                         You may also have to set PKG_CONFIG_PATH:
+			 PKG_CONFIG_PATH=.:/opt/X11/lib/pkgconfig/ ./configure --with-motif --with-ruby --with-portaudio 
+			 (Debian: ruby-dev)
+                       In Ruby 2.7, include -Wno-incompatible-pointer-types in CFLAGS.
+  
+     --with-forth      use Forth (Mike Scholz's FTH) as the extension language. (libfth or fth at sourceforge)
+  
+     --without-extension-language  build Snd without any extension language
+  
+
+   Graphics:
+
+     --with-motif      use Motif.  If it's in some odd location, you can provide that info:
+                         ./configure LDFLAGS="-L/usr/X11R6/lib" CFLAGS="-I/usr/X11R6/include" --with-motif
+
+                         in Fedora, install the motif, motif-devel, and libXpm-devel packages.
+                         in *BSD, pkg install open-motif, or perhaps use pkgin?
+                         in Debian, apt-get install libmotif4, libmotif-dev, libxt-dev, libxpm-dev
+			    in Ubuntu 21.04 the Motif libraries appear to be libmotif-common libxm4 libmotif-dev
+			      and X11/extensions/shape.h is in libxext-dev
+                         Also the X miscellaneous fonts package, Fedora: xorg-x11-fonts-misc, 
+                           Fedora: xorg-x11-fonts-misc
+                           Arch: https://archlinux.org/packages/extra/any/xorg-fonts-misc/
+
+     --with-gui        make Snd with graphics support (actually intended for use as --without-gui)
+  
+     --with-gl         include support for OpenGL (default: no, Motif only) (debian: libgl-dev libglu-dev)
+       --with-gl2ps    include gl2ps (postscript output from OpenGL graphics)
+  
+
+   Audio:
+
+     --with-alsa       use ALSA if possible (the default in Linux) (Debian: libasound2-dev, Fedora: alsa-lib and alsa-lib-dev)
+
+     --with-oss        use OSS (not tested in a long time)
+  
+     --with-jack       use the Jack library which needs libsamplerate
+
+     --with-pulseaudio use PulseAudio (untested), libpulse-dev in debian, puleaudio-libs-devel in Fedora
+
+     --without-audio   do not include audio support.  This also affects the
+                         GUI (play buttons are omitted).
+
+
+   Other options:
+
+     --with-gmp        use gmp, mpfr, and mpc to implement multiprecision arithmetic
+                       (Debian: libgmp-dev libmpfr-dev libmpc-dev)
+
+     --with-ladspa     include LADSPA plugin support (default: yes in Linux)
+                       (get ladaps.h and put it in /usr/local/include or some such directory)
+  
+     --with-temp-dir   directory to use for temp files (default: ".")
+     --with-save-dir   directory to use for saved-state files (default: ".")
+     --with-doc-dir    directory to search for documentation
+
+
+If the configure/make process fails, please send me
+(bil@ccrma.stanford.edu) the files mus-config.h, config.log, and makefile,
+created (or updated) by configure.  In general, if some switch is ignored,
+check that you have installed the "devel" package.  For example, --with-ruby
+won't work unless you have installed the ruby-devel package.
+
+Snd comes with s7, but if you insist on building Snd without any extension 
+language, you'll find that it's severely limited in what it can do.  
+Snd can also be built without any graphics toolkit.  Without either the GUI 
+or an extension language, however, there's nothing it can do.
+
+Here at CCRMA, we use this configure invocation:
+
+  ./configure --with-jack --with-temp-dir=/zap
+
+In OpenBSD
+  sh configure --with-motif --mandir=/usr/local/man --docdir=/usr/local/share/doc --with-doc-dir=/usr/local/share/doc/snd
+  gmake
+
+
+Version info:
+  if Motif, then Motif 2.n but not Lesstif
+  in Linux, if ALSA, then ALSA 1.0 or later
+  if Ruby, Ruby 1.8.0 or later.  
+  if Forth, any version
+  if s7, version 3.0 or later (it comes with Snd).
+  if GSL, version 1.0 or later
+
+
+----------------------------------------------------------------
+
+The customization/extension languages are either s7, Ruby, or Forth.
+
+Much of Snd's functionality is loaded as needed from the Scheme, Ruby, or Forth
+files found in the tarball (*.scm, *.rb, and *.fs).  You can run Snd without 
+these files, but there's no reason to!  Just add the directory containing
+those files to the "load-path".  In s7,
+
+  (set! *load-path* (cons "/home/bil/cl" *load-path*))
+
+*load-path* is the list of directories that s7 looks at when trying
+to find a file to load.  Here I've added "/home/bil/cl" so that Snd
+can find its sources no matter what directory I run it in.  If you 
+create a file named ~/.snd_s7 and put such a line in it, you'll
+never have to think about it again.  In the other languages:
+
+Ruby:   $LOAD_PATH.push("/home/bil/cl")
+Forth:  "/home/bil/cl" add-load-path
+
+----------------------------------------------------------------
+
+The documentation is in snd.html, extsnd.html, grfsnd.html, sndscm.html,
+sndlib.html, sndclm.html, fm.html, s7.html, s7-ffi.html, and s7-scm.html.
+
+A brief change log is in HISTORY.Snd.
+
+
+The mailing list for Snd is the same as that for Common Music:
+cmdist@ccrma.stanford.edu.  To subscribe, visit
+
+  http://ccrma-mail.stanford.edu/mailman/listinfo/cmdist
+
+
+To follow the Snd SVN repository, the first time you need to
+
+  svn checkout svn://svn.code.sf.net/p/snd/svn1 snd
+
+This creates a local snd directory with the files (in the trunk directory).
+
+  svn update
+
+updates any changed files.
+
+
+----------------------------------------------------------------
+This software is available to anyone who is interested, free gratis
+for nothing, without warranties of any kind (see the file COPYING for
+legalese).  Send bug reports or suggestions to bil@ccrma.stanford.edu.
+----------------------------------------------------------------
+
+
+Authors:
+
+Bill Schottstaedt
+Michael Scholz
+
+Rick Taube, Andrew Burnson, Donny Ward, Greg Santucci: C++ and Windows wizardry.
+Kjetil S. Matheussen:                   the Jack support and many other improvements.
+Dave Phillips:                          the tutorial, new-effects.scm, and many other files.
+Fernando Lopez-Lezcano:                 the current ALSA support.
+Rick Taube and Anders Vinjar:           CM scheme files ported to Snd
+Tito Latini:                            many bugfixes and new features.
+Richard W.E. Furse:                     the original LADSPA support.
+Nick Bailey:                            the ESD support.
+Volker Kuhlmann and Seppo Ingalsuo:     the Solaris port.
+Seppo Ingalsuo:                         the HPUX port.
+Juan Reyes:                             the DEC Alpha port.
+Guenter Geiger and Stefan Schwandter:   the Linux Alpha port.
+Paul Davis:                             the original ALSA support.
+Steven Schultz and Mike Scholz:         the *BSD ports.
+Ludger Brummer and Charles Nichols:     the Mac-OSX port.
+Thomas Klausner and Mike Scholz:        the NetBSD port.
+Koen De Turck and AW Green:             the OpenBSD port.
+Steve Beet:                             minGW
+
+Plus many other contributions from
+  Fernando Lopez-Lezcano, 
+  Tom Roth,
+  Fabio Furlanete,
+  Rick Taube,
+  Anders Vinjar,
+  Olivier Doare,
+  Ville Koskinen,
+  Andrew Burnson.
+
+
+In terms of number of lines, the languages used in Snd/Sndlib are:
+C, Scheme, Ruby, Forth, Emacs Lisp, Fortran, and Lua (altogether about 850k lines).
+
+
+----------------------------------------------------------------
+
+If you hit a bug, don't just sit there weeping -- send me
+(bil@ccrma.stanford.edu) a description of it!  If it's something like
+a segfault, you have gdb, and you can build Snd from the sources, it
+would help me a lot if you could build it with the -g switch, then
+
+gdb snd
+run
+<here do whatever it takes to get the bug>
+where
+
+The 'where' command should print out the current stack trace which
+is extremely helpful to me in tracking down the problem.  It can also
+be helpful to move to the first Snd-related function in the stack
+(via the 'up' command), then type
+
+info locals
+
+This will print out the value of the local variables.  In most cases,
+that's all I need to fix the bug immediately.  If Snd
+appears to be hung, you can 
+
+gdb snd
+run
+<now get it to hang, then type control-C to exit>
+where
+
+
+
+----------------------------------------------------------------
+
+TROUBLES:
+
+---- wayland ----
+
+Currently in wayland you need to run snd:
+
+GDK_BACKEND=x11 snd
+
+Thanks to Kenneth Flak for this tip!
+
+
+---- audio (a can of worms) ----
+
+If nothing plays in Linux (try aplay for example), and the sound preferences
+have no effect, look for the pulseaudio daemon, and kill it.
+
+---- ALSA: ----
+
+Only versions from 1.0 of ALSA are supported.
+
+An addendum: in my system, I have a wretched sound card in my machine,
+and an EMI 2|6 connected to a USB connector.  So the EMI device is "hw:1"
+in Alsa terms, and since I never want to use the internal sound card,
+I have this line in my ~/.cshrc file:
+
+setenv MUS_ALSA_DEVICE "hw:1"
+
+But this number seems to be set randomly at boot time!  And sometimes, Alsa
+in its infinite wisdom mutes the playback device. So, now I
+have these lines executing at startup:
+
+amixer sset PCM,0 80% unmute
+amixer sset Mic,0 80%
+
+If you use 100% (meaning, give me full amplitude output), it's the same
+as 0!!  
+
+On a different machine, I use:
+
+setenv MUS_ALSA_DEVICE "plughw:0"
+
+
+
+If you get some complaint like
+
+  ;Invalid argument: cannot set hardware parameters for default
+
+try setting:
+
+    (set! (mus-alsa-device) "plughw:0")
+
+or
+
+    (set! (mus-alsa-device) "plughw:1")
+
+then try playing again.  The "default" device is always completely
+broken.  
+
+
+
+---- Motif: ----
+
+Only Motif 2.n is supported.  Be sure to get the Motif development
+package if you want to build Snd (you need the Motif headers).
+
+On 64-bit machines, use motif 2.3.2 or later.
+
+I think some of the newer Motif packages (like post-2012)
+need both /usr/include/X11/extensions/Print.h and
+/usr/include/X11/bitmaps/gray -- in the latter case I
+sometimes have to create the bitmaps directory.
+I can send copies of these files if needed.
+
+
+---- Mac OSX: ---- 
+
+Daniel Hensel sends these instructions to get Snd running with Motif:
+
+Download and install XQuartz:
+http://www.xquartz.org
+
+Download and install XCode
+open terminal:
+install Command Line Tools by typing
+xcode-select --install
+ 
+Install Homebrew
+
+And then: 
+
+brew install gcc 
+brew install ruby
+brew install openmotif
+brew install poppler
+brew install gsl
+brew install timidity
+brew install wavpack
+brew install wvunpack
+brew install mpg123
+brew install mpg321
+brew install vorbis-tools
+brew install flac
+brew install fftw
+
+This is new: 
+
+brew install libxft
+brew install libiconv 
+brew install libpng
+brew install fontconfig 
+brew install freetype
+
+cd to the snd folder and configure with
+
+CFLAGS="-I/opt/homebrew/include" LDFLAGS="-L/opt/homebrew/lib" ./configure  --with-motif 
+
+make and sudo make install
+
+after that, I make an Apple script to make a Snd.app.
+Open Scripteditor, make a new script and type,
+
+tell application "Terminal"
+	do script "/usr/local/bin/snd; exit"
+end tell
+
+Save as an App. Go to your Applications folder to Snd and 
+get app information via Cmd+i and drag your Snd.png File into it.
+
+--------
+Daniel Hensel's latest instructions:
+
+brew install openmotif
+
+Then:
+
+./configure \
+  --prefix=/opt/snd-s7 \
+  CC=clang \
+  --with-s7 \
+  --with-motif \
+  --with-gsl \
+  CPPFLAGS="-I/opt/homebrew/opt/openmotif/include -I/opt/homebrew/opt/gsl/include" \
+  LDFLAGS="-L/opt/homebrew/opt/openmotif/lib -L/opt/homebrew/opt/gsl/lib"
+
+make 
+sudo make install
+sudo ln -s /opt/snd-s7/bin/snd /usr/local/bin/snd
+
+After that, I make an AppleScript to create an Snd.app.
+Open Scripteditor, make a new script and type,
+
+tell application "Terminal"
+	do script "/usr/local/bin/snd; exit"
+end tell
+
+Save as an App. Go to your Applications folder to Snd and 
+ get app information via Cmd+i and drag your Snd.png File into it.
+
+
+-------- FreeBSD 9.n --------
+
+If the Snd compilation fails with complaints about the complex trig functions (ccosh etc),
+here are some suggestions from Mike Scholz:
+
+
+FBSD has CFLAGS=-fno-strict-aliasing as a default for base and ports. With 
+GCC you can use: 
+
+  % ./configure CFLAGS=-fno-strict-aliasing 
+
+Or at least set -fno-builtin: 
+
+  % ./configure CFLAGS=-fno-builtin 
+
+Or use clang without the aforementioned flags: 
+
+  % ./configure CC=clang 
+
+There is also a port in /usr/ports/audio/snd with version 13.0 from August 
+2012. 
+
+
+-------- Debian --------
+
+The last time I installed Debian (25-Jan-17) I installed the following
+Snd-related packages by hand:
+   libfftw3-3 libgsl2 libmotif-dev libxpm-dev libxt-dev libmpfr-dev libmpc-dev
+   libgsl-dev libfftw3-dev libgl-dev libglu-dev libjack-dev ruby-dev libasound2-dev
+
+
+-------- Fedora --------
+
+and for Fedora Core 22:
+  yum install gcc tcsh rxvt emacs fftw3 fftw3-devel
+              alsa-lib alsa-lib-devel gsl gsl-devel gmp gmp-devel 
+              mpfr mpfr-devel libmpc libmpc-devel ruby ruby-devel motif 
+              motif-devel libXpm-devel mesa-libGLU-devel
+
+
+-------- mingw/msys2 --------
+
+# Building Snd 26 on Windows (MSYS2 / UCRT64, no GUI)
+
+Tested on Windows 11 ARM64 running the x64 MSYS2 build under emulation,
+installer `msys2-x86_64-20260611.exe`. A native x64 machine should behave
+the same.
+
+## 1. Packages
+
+In the **UCRT64** shell (not MSYS, not MINGW64):
+
+    pacman -Syu          # close the window, reopen, run it once more
+    pacman -S --needed git base-devel mingw-w64-ucrt-x86_64-toolchain \
+      mingw-w64-ucrt-x86_64-fftw mingw-w64-ucrt-x86_64-libsndfile \
+      mingw-w64-ucrt-x86_64-portaudio mingw-w64-ucrt-x86_64-dlfcn
+
+`mingw-w64-ucrt-x86_64-dlfcn` is the one that is easy to miss. UCRT64 ships
+no `dlfcn.h`, and `snd-xen.c` needs it for the `dlopen` bindings.
+
+## 2. Unpack and patch
+
+Build from a path without spaces; the MSYS2 home directory works:
+
+    cd ~
+    tar xzf snd.tar.gz
+    cd snd-26
+#    patch -p0 < snd-mingw.patch # already patched
+
+## 3. Configure and build
+
+    ./configure --without-gui
+    sed -i 's/^LIBS = /LIBS = -ldl /' makefile
+    make
+
+`configure` already emits `-lwinmm -lwsock32`; only `-ldl` has to be added,
+and only because `configure` doesn't yet detect the dlfcn package on mingw.
+`s7.c` alone takes several minutes.
+
+## 4. Check
+
+    echo '(display "PING")(newline)' > t.scm
+    ./snd -noglob -noinit -l t.scm < /dev/null
+
+Prints `PING`. Note the *relative* filename - see below.
+
+## Open issues
+
+**`-l` rejects absolute paths.** `./snd -l C:/tmp/t.scm` fails with
+`can't load C:/tmp/t.scm: Invalid argument`, while `-l t.scm` and `-l ./t.scm`
+from that directory both work. The file exists and is readable either way.
+This looks like the argument being split on `:` as a path-list separator; on
+Windows every absolute path carries a drive colon, so no absolute path can
+be passed to `-l` at all. Any tool driving Snd has to chdir first and pass a
+bare filename.
+
+**`libc_s7.so`.** Without `-noinit`, startup compiles and dlopens
+`libc_s7.so`. On Windows the extension is `.dll`, so the load fails, `*libc*`
+stays unbound, and `repl.scm` aborts before the listener is usable.
+
+**Audio untested.** The above covers the non-GUI build used for scripting;
+nothing was played.

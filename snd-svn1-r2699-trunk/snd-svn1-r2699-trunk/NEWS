@@ -1,0 +1,9 @@
+Snd 26.8:
+
+changes for big-endian machines (Piotr Kubaj)
+also 32-bit gmp support (Robert Clausecker)
+
+checked: sbcl-2.6.9
+
+Thanks!: Piotr Kubaj, Robert Clausecker, Massimiliano Gubinelli, Norman Gray
+
